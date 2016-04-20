@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.SceneManagement;
 using System.Collections;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -11,11 +10,15 @@ public class Player : MonoBehaviour {
 
     private Rigidbody rb;
     private GameUI ui;
+    private int score;
+    private Data _data;
 
     void Start()
     {
+        _data = FindObjectOfType<Data>();
         rb = GetComponent<Rigidbody>();
         ui = FindObjectOfType<GameUI>();
+        score = 0;
     }
 
     void Update()
@@ -32,6 +35,11 @@ public class Player : MonoBehaviour {
     	{
     		StartCoroutine(Finished(delay));
     	}
+        if (other.tag == "Level")
+        {
+            ui.GameOver();
+            _data.SetHighscoreArray(getScore());
+        }
     }
 
     private bool IsGrounded()
@@ -47,7 +55,27 @@ public class Player : MonoBehaviour {
     private IEnumerator Finished(float _delay)
     {
     	ui.StartGoal();
+        _data.SetHighscoreArray(getScore());
     	yield return new WaitForSeconds(_delay);
     	ui.ToMain();
+    }
+
+    private void increaseScore(int amount)
+    {
+        score += amount;
+    }
+
+    public int getScore()
+    {
+        return score;
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if(other.gameObject.CompareTag("Coin"))
+        {
+            increaseScore(100);
+            Destroy(other.gameObject);
+        }
     }
 }
